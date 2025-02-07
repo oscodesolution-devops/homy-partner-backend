@@ -2,10 +2,10 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import connectToDb from './database/DbController.js';
-import UserRoutes from './routes/UserRoutes.js'
-import ServiceRoutes from './routes/ServicesRoutes.js'
-import DocumentRoutes from './routes/documentRoutes.js'
+import connectToDb from './src/database/DbController.js'
+import UserRoutes from './src/routes/UserRoutes.js'
+import ServiceRoutes from './src/routes/ServicesRoutes.js'
+import DocumentRoutes from './src/routes/documentRoutes.js'
 
 dotenv.config({
     path:'./.env'
