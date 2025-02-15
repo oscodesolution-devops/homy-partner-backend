@@ -4,8 +4,6 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import connectToDb from './src/database/DbController.js'
 import UserRoutes from './src/routes/UserRoutes.js'
-import ServiceRoutes from './src/routes/ServicesRoutes.js'
-import DocumentRoutes from './src/routes/documentRoutes.js'
 
 dotenv.config({
     path:'./.env'
@@ -19,8 +17,6 @@ app.use(cookieParser());
 app.use(morgan('dev'));
 
 app.use('/api/auth', UserRoutes);
-app.use('/api/services', ServiceRoutes);
-app.use('/api/documents', DocumentRoutes);
 
 app.get('/', function (req, res) {
   res.send('Hello World')

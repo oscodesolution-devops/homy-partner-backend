@@ -1,28 +1,17 @@
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
-    Name: {
+    fullName: {
         type: String,
         required: true,
+        trim: true
     },
-    Buiness_Name: {
+    businessName: {
         type: String,
         required: true,
-        unique: true
+        trim: true
     },
-    Address: {
-        state: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        pincode: {
-            type: String,
-            required: true
-        },
+    address: {
         address1: {
             type: String,
             required: true
@@ -30,11 +19,19 @@ const UserSchema = new mongoose.Schema({
         address2: {
             type: String
         },
+        city: {
+            type: String,
+            required: true
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        pincode: {
+            type: String,
+            required: true
+        }
     },
-    Profile_Pic: {
-        type: String,
-        default: 'https://picsum.photos/200',
-    },  
     PhoneNo: {
         type: Number,
         required: true,
@@ -42,6 +39,35 @@ const UserSchema = new mongoose.Schema({
         minLength: 10,
         maxLength: 13,
     },
+    chefServices: {
+        type: String,
+        required: true
+    },
+    homemakerServices: {
+        type: Boolean,
+        default: false
+    },
+    document: {
+        type: {
+            type: String,
+            required: true
+        },
+        documentNo: {
+            type: String,
+            required: true
+        },
+        docsPhoto: {
+            front: {
+                type: String,
+                required: true
+            },
+            back: {
+                type: String,
+                required: true
+            }
+        }
+    }
+    
 }, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
