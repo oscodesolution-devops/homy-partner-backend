@@ -8,16 +8,16 @@ import {
     checkInChef, 
     checkOutChef 
 } from '../controllers/orderscheckControllers.js';
-
+import upload from '../middlewares/multer.config.js'
 const router = express.Router();
 
 
 router.post("/createOrder", createOrder);                   // Create a new order
 router.get("/getAllOrders", getOrders);                      // Get all orders
 router.get("/getOrderbyId/:id", getOrderById);                  // Get a single order by ID
-router.put("/updateorderById/:id", updateOrder);                // Update an order by ID
-router.delete("/deleteorderbyId/:id", deleteOrder);                  // Delete an order by ID
-router.put("/ChefChekIn/:id/checkin", checkInChef);                 // Chef Check-in
-router.put("/chefCheckOut/:id/checkout", checkOutChef);                 // Chef Check-out
+router.put("/updateOrderById/:id", updateOrder);                // Update an order by ID
+router.delete("/deleteOrderbyId/:id", deleteOrder);                  // Delete an order by ID
+router.put("/ChefChekIn/:id", checkInChef);                 // Chef Check-in
+router.put("/chefCheckOut/:id", upload.array("checkoutImage", 5),checkOutChef);                 // Chef Check-out
 
 export default router;

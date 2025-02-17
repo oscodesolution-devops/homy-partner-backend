@@ -29,7 +29,6 @@ const getOrders = async (req, res) => {
 
 // Get a single order by ID
 const getOrderById = async (req, res) => {
-    console.log("78qw7817871238721837")
     try {
         const { id } = req.params;
         if (!id) return res.status(400).json({ message: "Invalid order ID" });
@@ -47,7 +46,7 @@ const getOrderById = async (req, res) => {
 const updateOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid order ID" });
+        if (!id) return res.status(400).json({ message: "Invalid order ID" });
 
         const updatedOrder = await Order.findByIdAndUpdate(id, req.body, { new: true });
         if (!updatedOrder) return res.status(404).json({ message: "Order not found" });
@@ -62,7 +61,7 @@ const updateOrder = async (req, res) => {
 const deleteOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid order ID" });
+        if (!id) return res.status(400).json({ message: "Invalid order ID" });
 
         const deletedOrder = await Order.findByIdAndDelete(id);
         if (!deletedOrder) return res.status(404).json({ message: "Order not found" });
@@ -77,7 +76,7 @@ const deleteOrder = async (req, res) => {
 const checkInChef = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid order ID" });
+        if (!id) return res.status(400).json({ message: "Invalid order ID" });
 
         const order = await Order.findById(id);
         if (!order) return res.status(404).json({ message: "Order not found" });
@@ -102,7 +101,7 @@ const checkOutChef = async (req, res) => {
         const { id } = req.params;
         const { checkoutImage } = req.body;
 
-        if (!isValidObjectId(id)) return res.status(400).json({ message: "Invalid order ID" });
+        if (!id) return res.status(400).json({ message: "Invalid order ID" });
 
         const order = await Order.findById(id);
         if (!order) return res.status(404).json({ message: "Order not found" });
