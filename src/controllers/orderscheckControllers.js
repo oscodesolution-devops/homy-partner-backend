@@ -99,8 +99,6 @@ const checkInChef = async (req, res) => {
 const checkOutChef = async (req, res) => {
     try {
         const { id } = req.params;
-        const { checkoutImage } = req.body;
-
         if (!id) return res.status(400).json({ message: "Invalid order ID" });
 
         const order = await Order.findById(id);
@@ -109,12 +107,15 @@ const checkOutChef = async (req, res) => {
         if (order.chefCheckedOut) {
             return res.status(400).json({ message: "Chef has already checked out" });
         }
-
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "No images uploaded!" });
+        }        
         order.chefCheckedOut = true;
         order.checkedOutAt = new Date();
-
-        if (checkoutImage && Array.isArray(checkoutImage)) {
-            order.checkoutImage.push(...checkoutImage); // Append images instead of replacing
+        // Handling uploaded file(s)
+        if (req.files && req.files.length > 0) {
+            const imagePaths = req.files.map((file) => file.path); // Extract file paths
+            order.checkoutImage.push(...imagePaths); // Append instead of replacing
         }
 
         await order.save();

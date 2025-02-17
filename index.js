@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import connectToDb from './src/database/DbController.js'
+import connectToDb from './src/connections/DbController.js'
 import chefsRoutes from './src/routes/chefsRoutes.js'
 import orderRoutes from './src/routes/orderscheckRoutes.js'
 

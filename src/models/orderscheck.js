@@ -48,10 +48,10 @@ const orderscheck = new mongoose.Schema({
     checkedOutAt: { 
         type: Date 
     },
-    checkoutImage: [{
-        type: String,
-        required: true,
-    }]
+    checkoutImage: {
+        type: [String], // Ensure it's an array of strings (file paths)
+        default: [],
+    }    
 },{timestamps: true});
 
 const Order = mongoose.model("Order", orderscheck);
