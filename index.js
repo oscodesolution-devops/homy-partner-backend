@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import connectToDb from './src/database/DbController.js'
-import UserRoutes from './src/routes/UserRoutes.js'
+import chefsRoutes from './src/routes/chefsRoutes.js'
+import orderRoutes from './src/routes/orderscheckRoutes.js'
 
 dotenv.config({
     path:'./.env'
@@ -16,7 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-app.use('/api/auth', UserRoutes);
+app.use('/api/auth', chefsRoutes);
+app.use('/api/orders', orderRoutes);
 
 app.get('/', function (req, res) {
   res.send('Hello World')

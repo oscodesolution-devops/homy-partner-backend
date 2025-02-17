@@ -1,4 +1,4 @@
-import User from '../models/UsersModel.js';
+import User from '../models/chefsModel.js';
 import twilio from 'twilio';
 
 const accountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
