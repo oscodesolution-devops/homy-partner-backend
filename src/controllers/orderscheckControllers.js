@@ -1,4 +1,7 @@
 import Order from '../models/orderscheck.js'
+import uploadToCloudinary from '../connections/cloudinary.config.js';
+
+
 
 // Create a new order
 const createOrder = async (req, res) => {
@@ -107,16 +110,20 @@ const checkOutChef = async (req, res) => {
         if (order.chefCheckedOut) {
             return res.status(400).json({ message: "Chef has already checked out" });
         }
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "No images uploaded!" });
         }        
+
         order.chefCheckedOut = true;
         order.checkedOutAt = new Date();
-        // Handling uploaded file(s)
-        if (req.files && req.files.length > 0) {
-            const imagePaths = req.files.map((file) => file.path); // Extract file paths
-            order.checkoutImage.push(...imagePaths); // Append instead of replacing
-        }
+        const uploadedImages = await Promise.all(
+            req.files.map(async (file) => {
+                return await uploadToCloudinary(file.path, "checkout_images");
+            })
+        );
+
+        order.checkoutImage.push(...uploadedImages); // Append Cloudinary URLs to order
 
         await order.save();
         res.status(200).json({ message: "Chef checked out successfully", order });
