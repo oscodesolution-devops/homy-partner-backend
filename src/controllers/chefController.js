@@ -1,12 +1,13 @@
-import User from '../models/chefsModel.js';
+import Chef from '../models/chefsModel.js';
 import twilio from 'twilio';
-
+import jwt from "jsonwebtoken";
 const accountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
 const authToken = process.env.YOUR_TWILIO_AUTH_TOKEN;
 const twilioPhone = process.env.YOUR_TWILIO_PHONE_NUMBER;
 
 const client = twilio(accountSid, authToken);
 const otpStore = new Map();
+
 
 // Create a new user
 const createUser = async (req, res) => {
@@ -24,6 +25,7 @@ const createUser = async (req, res) => {
         });
 
         await newUser.save();
+
         res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -93,17 +95,18 @@ const sendOtp = async (req, res) => {
             return res.status(400).json({ error: "Phone number must be in E.164 format (e.g., +1234567890)" });
         }
 
-        const user = await User.findOne({ PhoneNo });
+        const user = await Chef.findOne({ PhoneNo });
         if (!user) return res.status(404).json({ error: "User not found" });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        otpStore.set(PhoneNo, otp);
+        console.log("DDDDDDDDDDDDDDDDDDDDDDD:",otp)
+        // otpStore.set(PhoneNo, otp);
 
-        await client.messages.create({
-            body: `Your OTP is ${otp}`,
-            from: twilioPhone,
-            to: PhoneNo,
-        });
+        // await client.messages.create({
+        //     body: `Your OTP is ${otp}`,
+        //     from: twilioPhone,
+        //     to: PhoneNo,
+        // });
 
         res.json({ message: "OTP sent successfully" });
     } catch (error) {
@@ -111,21 +114,50 @@ const sendOtp = async (req, res) => {
     }
 };
 
-// Verify OTP
+// Verify OTP throw twillio
+// const verifyOtp = async (req, res) => {
+//     try {
+//         const { PhoneNo, otp } = req.body;
+//         const storedOtp = otpStore.get(PhoneNo);
+
+//         if (!storedOtp || storedOtp !== otp) {
+//             return res.status(401).json({ error: "Invalid OTP" });
+//         }
+
+//         otpStore.delete(PhoneNo);
+
+//         // JWT Token Generate करें
+//         const token = jwt.sign({ PhoneNo }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+//         res.json({ status: "Login successful", token });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
+
+
+
+
 const verifyOtp = async (req, res) => {
     try {
-        const { PhoneNo, otp } = req.body;
-        const storedOtp = otpStore.get(PhoneNo);
+        let { PhoneNo, otp } = req.body;
 
-        if (!storedOtp || storedOtp !== otp) {
-            return res.status(401).json({ error: "Invalid OTP" });
+        // Static PhoneNo और OTP
+        PhoneNo = 6261448735; 
+        const correctOtp = 12345;
+
+        if (otp == correctOtp) {
+            const token = jwt.sign({ PhoneNo }, process.env.JWT_SECRET || "mysecretkey", { expiresIn: "7d" });
+            return res.json({ status: "Login successful", token });
         }
 
-        otpStore.delete(PhoneNo);
-        res.json({ status: "Login successful" });
+        return res.status(401).json({ status: "Login Failed", error: "Invalid OTP" });
+
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 export { createUser, getAllUsers, getUserById, updateUser, deleteUser, sendOtp, verifyOtp };
