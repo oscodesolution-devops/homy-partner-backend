@@ -6,6 +6,10 @@ const chefsModel = new mongoose.Schema({
         required: true,
         trim: true
     },
+    profilePic: {
+        type: String,
+        required: true, 
+    },
     businessName: {
         type: String,
         required: true,
@@ -33,11 +37,11 @@ const chefsModel = new mongoose.Schema({
         }
     },
     PhoneNo: {
-        type: Number,
+        type: String,  // Changed to String to support minLength & maxLength
         required: true,
         unique: true,
         minLength: 10,
-        maxLength: 13,
+        maxLength: 13
     },
     chefServices: {
         type: String,
@@ -66,8 +70,12 @@ const chefsModel = new mongoose.Schema({
                 required: true
             }
         }
+    },
+    verificationStatus: {
+        type: String,
+        default: 'Pending',
+        enum: ['Pending', 'Verified', 'Rejected']
     }
-    
 }, { timestamps: true });
 
 const Chef = mongoose.model('Chef', chefsModel);

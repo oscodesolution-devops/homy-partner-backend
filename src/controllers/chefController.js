@@ -5,30 +5,37 @@ const accountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
 const authToken = process.env.YOUR_TWILIO_AUTH_TOKEN;
 const twilioPhone = process.env.YOUR_TWILIO_PHONE_NUMBER;
 import multer from 'multer';
-const client = twilio(accountSid, authToken);
+// const client = twilio(accountSid, authToken);
 const otpStore = new Map();
-
+import uploadToCloudinary from '../connections/cloudinary.config.js';
 
 // Create a new user
 const createUser = async (req, res) => {
     try {
-
         const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, documentType, documentNo } = req.body;
-        if (!fullName || !businessName || !PhoneNo || !chefServices || !homemakerServices || !documentType || !documentNo) {
-            return res.status(400).json({ message: "All fields are required" });
-        }        
-        if (!address || !address.address1 || !address.city || !address.state || !address.pincode) {
-            return res.status(400).json({ message: "All address fields (address1, city, state, pincode) are required" });
+
+        if (!fullName || !businessName || !PhoneNo || !chefServices || !documentType || !documentNo) {
+            return res.status(400).json({ message: "All required fields must be filled." });
         }
 
-        if (!req.files || !req.files.front || !req.files.back) {
-            return res.status(400).json({ message: "Both front and back document images are required" });
+        if (!address || !address.address1 || !address.city || !address.state || !address.pincode) {
+            return res.status(400).json({ message: "All address fields (address1, city, state, pincode) are required." });
         }
+
+        if (!req.files || !req.files.profilePic || !req.files.front || !req.files.back) {
+            return res.status(400).json({ message: "Profile picture, front and back document images are required." });
+        }
+
+        // Upload files to Cloudinary
+        const profilePicUrl = await uploadToCloudinary(req.files.profilePic[0].path, "chefs/profilePics");
+        const frontDocUrl = await uploadToCloudinary(req.files.front[0].path, "chefs/documents");
+        const backDocUrl = await uploadToCloudinary(req.files.back[0].path, "chefs/documents");
 
         const homemakerServicesBoolean = homemakerServices === 'true' || homemakerServices === true;
 
         const newUser = new Chef({
             fullName,
+            profilePic: profilePicUrl,
             businessName,
             address,
             PhoneNo,
@@ -38,22 +45,19 @@ const createUser = async (req, res) => {
                 type: documentType,
                 documentNo,
                 docsPhoto: {
-                    front: req.files.front[0].path,
-                    back: req.files.back[0].path
+                    front: frontDocUrl,
+                    back: backDocUrl
                 }
-            }
+            },
+            verificationStatus: "Pending"
         });
 
         await newUser.save();
         res.status(201).json({ message: "User created successfully", user: newUser });
 
     } catch (error) {
-        if (error instanceof multer.MulterError) {
-            return res.status(400).json({ message: error.message });
-        } else {
-            // General errors
-            res.status(500).json({ message: "An error occurred while creating the user.", error: error.message });
-        }
+        console.error("Error creating user:", error);
+        res.status(500).json({ message: "An error occurred while creating the user.", error: error.message });
     }
 };
 
