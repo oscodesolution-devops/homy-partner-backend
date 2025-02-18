@@ -1,16 +1,16 @@
 import Chef from '../models/chefsModel.js';
-import twilio from 'twilio';
 import jwt from "jsonwebtoken";
-const accountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
-const authToken = process.env.YOUR_TWILIO_AUTH_TOKEN;
-const twilioPhone = process.env.YOUR_TWILIO_PHONE_NUMBER;
-import multer from 'multer';
-// const client = twilio(accountSid, authToken);
-const otpStore = new Map();
 import uploadToCloudinary from '../connections/cloudinary.config.js';
+// import twilio from 'twilio';
+// const accountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
+// const authToken = process.env.YOUR_TWILIO_AUTH_TOKEN;
+// const twilioPhone = process.env.YOUR_TWILIO_PHONE_NUMBER;
+// import multer from 'multer';
+// const client = twilio(accountSid, authToken);
+// const otpStore = new Map();
 
 // Create a new user
-const createUser = async (req, res) => {
+const createChef = async (req, res) => {
     try {
         const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, documentType, documentNo } = req.body;
 
@@ -62,7 +62,7 @@ const createUser = async (req, res) => {
 };
 
 // Get all users
-const getAllUsers = async (req, res) => {
+const getAllChefs = async (req, res) => {
     try {
         const users = await Chef.find();
         res.status(200).json(users);
@@ -72,7 +72,7 @@ const getAllUsers = async (req, res) => {
 };
 
 // Get a user by ID
-const getUserById = async (req, res) => {
+const getChefById = async (req, res) => {
     try {
         const user = await Chef.findById(req.params.id);
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -83,7 +83,7 @@ const getUserById = async (req, res) => {
 };
 
 // Update a user by ID
-const updateUser = async (req, res) => {
+const updateChefById = async (req, res) => {
     try {
         const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, document } = req.body;
         
@@ -105,7 +105,7 @@ const updateUser = async (req, res) => {
 };
 
 // Delete a user by ID
-const deleteUser = async (req, res) => {
+const deleteChefById = async (req, res) => {
     try {
         const deletedUser = await Chef.findByIdAndDelete(req.params.id);
         if (!deletedUser) return res.status(404).json({ message: "User not found" });
@@ -165,15 +165,12 @@ const sendOtp = async (req, res) => {
 // };
 
 
-
-
-
 const verifyOtp = async (req, res) => {
     try {
         let { PhoneNo, otp } = req.body;
 
         // Static PhoneNo और OTP
-        PhoneNo = 6261448735; 
+        // PhoneNo = 6261448735; 
         const correctOtp = 12345;
 
         if (otp == correctOtp) {
@@ -189,4 +186,4 @@ const verifyOtp = async (req, res) => {
 };
 
 
-export { createUser, getAllUsers, getUserById, updateUser, deleteUser, sendOtp, verifyOtp };
+export { createChef, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp };
