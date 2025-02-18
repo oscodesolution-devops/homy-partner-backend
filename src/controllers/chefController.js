@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const accountSid = process.env.YOUR_TWILIO_ACCOUNT_SID;
 const authToken = process.env.YOUR_TWILIO_AUTH_TOKEN;
 const twilioPhone = process.env.YOUR_TWILIO_PHONE_NUMBER;
-
+import multer from 'multer';
 const client = twilio(accountSid, authToken);
 const otpStore = new Map();
 
@@ -12,30 +12,55 @@ const otpStore = new Map();
 // Create a new user
 const createUser = async (req, res) => {
     try {
-        const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, document } = req.body;
 
-        const newUser = new User({
+        const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, documentType, documentNo } = req.body;
+        if (!fullName || !businessName || !PhoneNo || !chefServices || !homemakerServices || !documentType || !documentNo) {
+            return res.status(400).json({ message: "All fields are required" });
+        }        
+        if (!address || !address.address1 || !address.city || !address.state || !address.pincode) {
+            return res.status(400).json({ message: "All address fields (address1, city, state, pincode) are required" });
+        }
+
+        if (!req.files || !req.files.front || !req.files.back) {
+            return res.status(400).json({ message: "Both front and back document images are required" });
+        }
+
+        const homemakerServicesBoolean = homemakerServices === 'true' || homemakerServices === true;
+
+        const newUser = new Chef({
             fullName,
             businessName,
             address,
             PhoneNo,
             chefServices,
-            homemakerServices,
-            document
+            homemakerServices: homemakerServicesBoolean,
+            document: {
+                type: documentType,
+                documentNo,
+                docsPhoto: {
+                    front: req.files.front[0].path,
+                    back: req.files.back[0].path
+                }
+            }
         });
 
         await newUser.save();
-
         res.status(201).json({ message: "User created successfully", user: newUser });
+
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        if (error instanceof multer.MulterError) {
+            return res.status(400).json({ message: error.message });
+        } else {
+            // General errors
+            res.status(500).json({ message: "An error occurred while creating the user.", error: error.message });
+        }
     }
 };
 
 // Get all users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await Chef.find();
         res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -45,7 +70,7 @@ const getAllUsers = async (req, res) => {
 // Get a user by ID
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await Chef.findById(req.params.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         res.status(200).json(user);
     } catch (error) {
@@ -58,7 +83,7 @@ const updateUser = async (req, res) => {
     try {
         const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, document } = req.body;
         
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, {
+        const updatedUser = await Chef.findByIdAndUpdate(req.params.id, {
             fullName,
             businessName,
             address,
@@ -78,7 +103,7 @@ const updateUser = async (req, res) => {
 // Delete a user by ID
 const deleteUser = async (req, res) => {
     try {
-        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        const deletedUser = await Chef.findByIdAndDelete(req.params.id);
         if (!deletedUser) return res.status(404).json({ message: "User not found" });
         res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
@@ -148,7 +173,7 @@ const verifyOtp = async (req, res) => {
         const correctOtp = 12345;
 
         if (otp == correctOtp) {
-            const token = jwt.sign({ PhoneNo }, process.env.JWT_SECRET || "mysecretkey", { expiresIn: "7d" });
+            const token = jwt.sign({ PhoneNo }, process.env.JWT_SECRET, { expiresIn: "7d" });
             return res.json({ status: "Login successful", token });
         }
 
