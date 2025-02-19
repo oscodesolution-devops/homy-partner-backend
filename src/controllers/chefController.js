@@ -6,7 +6,6 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const verifySid = process.env.TWILIO_VERIFY_SID;
 const client = twilio(accountSid, authToken);
-// const otpStore = new Map();
 import multer from 'multer';
 
 
@@ -185,5 +184,33 @@ const verifyOtp = async (req, res) => {
     }
 };
 
+// update verification status
+const updateVerificationStatus = async (req, res) => {
+    try {
+      const { chefId } = req.params;
+      const { verificationStatus } = req.body;
+  
+      // Validate verificationStatus
+      if (!['Pending', 'Verified', 'Rejected'].includes(verificationStatus)) {
+        return res.status(400).json({ message: 'Invalid verification status' });
+      }
+  
+      const updatedChef = await Chef.findByIdAndUpdate(
+        chefId,
+        { verificationStatus },
+        { new: true, runValidators: true }
+      );
+  
+      if (!updatedChef) {
+        return res.status(404).json({ message: 'Chef not found' });
+      }
+  
+      res.status(200).json(updatedChef);
+    } catch (error) {
+      console.error('Error updating verification status:', error);
+      res.status(500).json({ message: 'Internal server error', error:error.message });
+    }
+  };
 
-export { createChef, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp };
+
+export { createChef, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp, updateVerificationStatus };
