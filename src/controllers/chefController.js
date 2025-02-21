@@ -127,32 +127,30 @@ const deleteChefById = async (req, res) => {
 };
 
 // Send OTP for verification
-// const sendOtp = async (req, res) => {
-//     try {
-//         const { PhoneNo } = req.body;
-
-//         if (!PhoneNo.startsWith('+')) {
-//             return res.status(400).json({ error: "Phone number must be in E.164 format (e.g., +1234567890)" });
-//         }
-
-//         const user = await Chef.findOne({ PhoneNo });
-//         if (!user) return res.status(404).json({ error: "User not found" });
-
-//         // Send OTP via Twilio Verify API
-//         const verification = await client.verify.v2.services(verifySid)
-//             .verifications
-//             .create({ to: PhoneNo, channel: 'sms' });
-
-//         res.json({ message: "OTP sent successfully", verificationSid: verification.sid });
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
-
-
-
-
 const sendOtp = async (req, res) => {
+    try {
+        const { PhoneNo } = req.body;
+
+        if (!PhoneNo.startsWith('+')) {
+            return res.status(400).json({ error: "Phone number must be in E.164 format (e.g., +1234567890)" });
+        }
+
+        const user = await Chef.findOne({ PhoneNo });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        // Send OTP via Twilio Verify API
+        const verification = await client.verify.v2.services(verifySid)
+            .verifications
+            .create({ to: PhoneNo, channel: 'sms' });
+
+        res.json({ message: "OTP sent successfully", verificationSid: verification.sid });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//sending dummy otp
+const sendDummyOtp = async (req, res) => {
     try {
         const { PhoneNo } = req.body;
 
@@ -171,9 +169,8 @@ const sendOtp = async (req, res) => {
     }
 };
 
-
-
-const verifyOtp = async (req, res) => {
+//verify dummy otp
+const verifyDummyOtp = async (req, res) => {
     try {
         const { PhoneNo, otp } = req.body;
 
@@ -204,44 +201,40 @@ const verifyOtp = async (req, res) => {
     }
 };
 
-
-
-
-
 // Verify OTP for verifiation
-// const verifyOtp = async (req, res) => {
-//     try {
-//         const { PhoneNo, otp } = req.body;
+const verifyOtp = async (req, res) => {
+    try {
+        const { PhoneNo, otp } = req.body;
 
-//         // Verify OTP using Twilio
-//         const verificationCheck = await client.verify.v2.services(verifySid)
-//             .verificationChecks
-//             .create({ to: PhoneNo, code: otp });
+        // Verify OTP using Twilio
+        const verificationCheck = await client.verify.v2.services(verifySid)
+            .verificationChecks
+            .create({ to: PhoneNo, code: otp });
 
-//         if (verificationCheck.status === 'approved') {
-//             const user = await Chef.findOne({ PhoneNo });
-//             if (!user) {
-//                 return res.status(404).json({ error: "User not found" });
-//             }
+        if (verificationCheck.status === 'approved') {
+            const user = await Chef.findOne({ PhoneNo });
+            if (!user) {
+                return res.status(404).json({ error: "User not found" });
+            }
 
-//             const token = jwt.sign(
-//                 { id: user._id, PhoneNo: user.PhoneNo },
-//                 process.env.JWT_SECRET,
-//                 { expiresIn: "7d" }
-//             );
+            const token = jwt.sign(
+                { id: user._id, PhoneNo: user.PhoneNo },
+                process.env.JWT_SECRET,
+                { expiresIn: "7d" }
+            );
 
-//             res.json({
-//                 message: "OTP verified successfully",
-//                 token: token,
-//                 user: user
-//             });
-//         } else {
-//             res.status(400).json({ error: "Invalid OTP" });
-//         }
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
+            res.json({
+                message: "OTP verified successfully",
+                token: token,
+                user: user
+            });
+        } else {
+            res.status(400).json({ error: "Invalid OTP" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 // update verification status
 const updateVerificationStatus = async (req, res) => {
@@ -269,7 +262,7 @@ const updateVerificationStatus = async (req, res) => {
       console.error('Error updating verification status:', error);
       res.status(500).json({ message: 'Internal server error', error:error.message });
     }
-  };
+};
 
 
-export { createChef, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp, updateVerificationStatus };
+export { createChef,sendDummyOtp,verifyDummyOtp, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp, updateVerificationStatus };
