@@ -164,6 +164,9 @@ const sendDummyOtp = async (req, res) => {
         const user = await Chef.findOne({ PhoneNo });
         if (!user) return res.status(404).json({ error: "User not found" });
 
+        if (user.verificationStatus !== "Verified") {
+            return res.status(403).json({ error: "User is not verified. OTP cannot be sent." });
+        }
         const otp = 12345
 
         res.json({ message: "OTP sent successfully",otp: otp });
@@ -194,7 +197,6 @@ const verifyDummyOtp = async (req, res) => {
             res.json({
                 message: "OTP verified successfully",
                 token: token,
-                user: user
             });
         } else {
             res.status(400).json({ error: "Invalid OTP" });
