@@ -137,13 +137,16 @@ const sendOtp = async (req, res) => {
 
         const user = await Chef.findOne({ PhoneNo });
         if (!user) return res.status(404).json({ error: "User not found" });
-
+        
+        if (user.verificationStatus !== "Verified") {
+            return res.status(403).json({ error: "User is not verified. OTP cannot be sent." });
+        }
         // Send OTP via Twilio Verify API
         const verification = await client.verify.v2.services(verifySid)
             .verifications
             .create({ to: PhoneNo, channel: 'sms' });
 
-        res.json({ message: "OTP sent successfully", verificationSid: verification.sid });
+        res.json({ message: "OTP sent successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -226,7 +229,6 @@ const verifyOtp = async (req, res) => {
             res.json({
                 message: "OTP verified successfully",
                 token: token,
-                user: user
             });
         } else {
             res.status(400).json({ error: "Invalid OTP" });
