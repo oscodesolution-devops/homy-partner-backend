@@ -45,7 +45,7 @@ const chefsModel = new mongoose.Schema({
         trim:true
     },
     chefServices: {
-        type: String,
+        type: [String],
         required: true
     },
     homemakerServices: {

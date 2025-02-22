@@ -32,13 +32,14 @@ const createChef = async (req, res) => {
 
         const homemakerServicesBoolean = homemakerServices === 'true' || homemakerServices === true;
 
+        const chefServicesArray = Array.isArray(chefServices) ? chefServices : [chefServices];
         const newChef = new Chef({
             fullName,
             profilePic: profilePicUrl,
             businessName,
             address,
             PhoneNo,
-            chefServices,
+            chefServices: chefServicesArray,
             homemakerServices: homemakerServicesBoolean,
             document: {
                 type: documentType,
@@ -98,15 +99,21 @@ const updateChefById = async (req, res) => {
     try {
         const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, document } = req.body;
         
-        const updatedUser = await Chef.findByIdAndUpdate(req.params.id, {
-            fullName,
-            businessName,
-            address,
-            PhoneNo,
-            chefServices,
-            homemakerServices,
-            document
-        }, { new: true });
+        const chefServicesArray = chefServices ? (Array.isArray(chefServices) ? chefServices : [chefServices]) : undefined;
+
+        const updatedUser = await Chef.findByIdAndUpdate(
+            req.params.id, 
+            {
+                fullName,
+                businessName,
+                address,
+                PhoneNo,
+                chefServices: chefServicesArray,
+                homemakerServices,
+                document
+            }, 
+            { new: true }
+        );
 
         if (!updatedUser) return res.status(404).json({ message: "User not found" });
         res.status(200).json({ message: "User updated successfully", user: updatedUser });
