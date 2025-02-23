@@ -20,11 +20,23 @@ if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !pr
     throw new Error("Cloudinary environment variables are missing!");
 }
 
-const uploadToCloudinary = async (filePath, folder) => {
+const uploadToCloudinary = async (imageData, folder) => {
     try {
-        const result = await cloudinary.uploader.upload(filePath, { folder });        
-        fs.unlinkSync(filePath); 
-        return result.secure_url;
+        // Check if the input is a base64 string
+        if (typeof imageData === 'string' && imageData.startsWith('data:')) {
+            // Upload base64 data directly
+            const result = await cloudinary.uploader.upload(imageData, {
+                folder: folder,
+                resource_type: "auto"
+            });
+            return result.secure_url;
+        } else {
+            // Handle file path upload (existing functionality)
+            const result = await cloudinary.uploader.upload(imageData, {
+                folder: folder
+            });
+            return result.secure_url;
+        }
     } catch (error) {
         console.error("Cloudinary upload error:", error);
         throw new Error("File upload failed.");

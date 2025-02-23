@@ -12,7 +12,19 @@ import multer from 'multer';
 // create a chef
 const createChef = async (req, res) => {
     try {
-        const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, documentType, documentNo } = req.body;
+        const { 
+            fullName, 
+            businessName, 
+            address, 
+            PhoneNo, 
+            chefServices, 
+            homemakerServices, 
+            documentType, 
+            documentNo,
+            profilePic,
+            documentFront,
+            documentBack
+        } = req.body;
 
         if (!fullName || !businessName || !PhoneNo || !chefServices || !documentType || !documentNo) {
             return res.status(400).json({ message: "All required fields must be filled." });
@@ -22,20 +34,16 @@ const createChef = async (req, res) => {
             return res.status(400).json({ message: "All address fields (address1, city, state, pincode) are required." });
         }
 
-        if (!req.files || !req.files.profilePic || !req.files.front || !req.files.back) {
-            return res.status(400).json({ message: "Profile picture, front and back document images are required." });
+        if (!profilePic || !documentFront || !documentBack) {
+            return res.status(400).json({ message: "Profile picture, front and back document image URLs are required." });
         }
 
-        const profilePicUrl = await uploadToCloudinary(req.files.profilePic[0].path, "chefs/profilePics");
-        const frontDocUrl = await uploadToCloudinary(req.files.front[0].path, "chefs/documents");
-        const backDocUrl = await uploadToCloudinary(req.files.back[0].path, "chefs/documents");
-
         const homemakerServicesBoolean = homemakerServices === 'true' || homemakerServices === true;
-
         const chefServicesArray = Array.isArray(chefServices) ? chefServices : [chefServices];
+
         const newChef = new Chef({
             fullName,
-            profilePic: profilePicUrl,
+            profilePic,
             businessName,
             address,
             PhoneNo,
@@ -45,8 +53,8 @@ const createChef = async (req, res) => {
                 type: documentType,
                 documentNo,
                 docsPhoto: {
-                    front: frontDocUrl,
-                    back: backDocUrl
+                    front: documentFront,
+                    back: documentBack
                 }
             },
             verificationStatus: "Pending"
@@ -54,7 +62,6 @@ const createChef = async (req, res) => {
 
         await newChef.save();
 
-        // Generate JWT Token
         const token = jwt.sign(
             { id: newChef._id, PhoneNo: newChef.PhoneNo },
             process.env.JWT_SECRET,
@@ -275,5 +282,31 @@ const updateVerificationStatus = async (req, res) => {
     }
 };
 
+const uploadImage = async (req, res) => {
+    try {
+        const { imageData, folder } = req.body;
 
-export { createChef,sendDummyOtp,verifyDummyOtp, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp, updateVerificationStatus };
+        if (!imageData || !folder) {
+            return res.status(400).json({ message: "Image data and folder are required" });
+        }
+
+        // Verify that the image data is a valid base64 string
+        if (!imageData.startsWith('data:image')) {
+            return res.status(400).json({ message: "Invalid image format" });
+        }
+
+        // Upload to cloudinary
+        const uploadResponse = await uploadToCloudinary(imageData, folder);
+
+        res.status(200).json({
+            message: "Image uploaded successfully",
+            imageUrl: uploadResponse
+        });
+
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        res.status(500).json({ message: "An error occurred while uploading the image", error: error.message });
+    }
+};
+
+export { createChef,sendDummyOtp,verifyDummyOtp, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp, updateVerificationStatus, uploadImage };
