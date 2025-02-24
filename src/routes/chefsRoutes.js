@@ -9,7 +9,7 @@ router.get('/getAllChefs' , getAllChefs);         // Get all users
 router.get('/getChefById/:id',verifyToken , getChefById);   // Get a user by ID
 router.put('/updateChefById/:id' , updateChefById);    // Update a user by ID
 router.delete('/deleteChefById/:id' , deleteChefById); // Delete a user by ID
-router.put('/UpdateVerification/:id', updateVerificationStatus); // verification update
+router.put('/UpdateVerification/:chefId', updateVerificationStatus); // verification update
 router.post('/sendOtpForLogin', sendOtp)
 router.post('/sendDummyOtpForLogin', sendDummyOtp)
 router.post('/verifyOtpForLogin', verifyOtp)

@@ -2,10 +2,17 @@ import Chef from '../models/chefsModel.js';
 import jwt from "jsonwebtoken";
 import uploadToCloudinary from '../connections/cloudinary.config.js';
 import twilio from 'twilio';
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const verifySid = process.env.TWILIO_VERIFY_SID;
+
+if (!accountSid || !authToken || !verifySid) {
+    console.error("Missing Twilio credentials");
+}
+
 const client = twilio(accountSid, authToken);
+
 import multer from 'multer';
 
 
@@ -144,6 +151,12 @@ const deleteChefById = async (req, res) => {
 const sendOtp = async (req, res) => {
     try {
         const { PhoneNo } = req.body;
+        
+        if (!PhoneNo) {
+            return res.status(400).json({ error: "Phone number is required" });
+        }
+
+        console.log('Attempting to send OTP to:', PhoneNo);
 
         if (!PhoneNo.startsWith('+')) {
             return res.status(400).json({ error: "Phone number must be in E.164 format (e.g., +1234567890)" });
@@ -155,14 +168,17 @@ const sendOtp = async (req, res) => {
         if (user.verificationStatus !== "Verified") {
             return res.status(403).json({ error: "User is not verified. OTP cannot be sent." });
         }
-        // Send OTP via Twilio Verify API
+
+        console.log('Sending OTP via Twilio...');
         const verification = await client.verify.v2.services(verifySid)
             .verifications
             .create({ to: PhoneNo, channel: 'sms' });
 
+        console.log('Twilio response:', verification);
         res.json({ message: "OTP sent successfully" });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error in sendOtp:', error);
+        res.status(500).json({ error: error.message || "Authentication failed" });
     }
 };
 
@@ -257,28 +273,31 @@ const verifyOtp = async (req, res) => {
 // update verification status
 const updateVerificationStatus = async (req, res) => {
     try {
-      const { chefId } = req.params;
-      const { verificationStatus } = req.body;
-  
-      // Validate verificationStatus
-      if (!['Pending', 'Verified', 'Rejected'].includes(verificationStatus)) {
-        return res.status(400).json({ message: 'Invalid verification status' });
-      }
-  
-      const updatedChef = await Chef.findByIdAndUpdate(
-        chefId,
-        { verificationStatus },
-        { new: true, runValidators: true }
-      );
-  
-      if (!updatedChef) {
-        return res.status(404).json({ message: 'Chef not found' });
-      }
-  
-      res.status(200).json(updatedChef);
+        const { chefId } = req.params;
+        const { verificationStatus } = req.body;
+
+        // Validate verificationStatus
+        if (!['Pending', 'Verified', 'Rejected'].includes(verificationStatus)) {
+            return res.status(400).json({ message: 'Invalid verification status' });
+        }
+
+        const updatedChef = await Chef.findByIdAndUpdate(
+            chefId,
+            { verificationStatus },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedChef) {
+            return res.status(404).json({ message: 'Chef not found' });
+        }
+
+        res.status(200).json({ 
+            success: true,
+            message: `Chef verification status successfully updated to ${verificationStatus}`
+        });
     } catch (error) {
-      console.error('Error updating verification status:', error);
-      res.status(500).json({ message: 'Internal server error', error:error.message });
+        console.error('Error updating verification status:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
 
