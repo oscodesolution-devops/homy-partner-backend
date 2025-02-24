@@ -328,4 +328,33 @@ const uploadImage = async (req, res) => {
     }
 };
 
-export { createChef,sendDummyOtp,verifyDummyOtp, getAllChefs, getChefById, updateChefById, deleteChefById, sendOtp, verifyOtp, updateVerificationStatus, uploadImage };
+// User Profile
+const getChefProfile = async (req, res) => {
+    try {
+        // req.user contains the decoded token payload from verifyToken middleware
+        const chef = await Chef.findById(req.user.id);
+        
+        if (!chef) {
+            return res.status(404).json({ message: "Chef not found" });
+        }
+        
+        res.status(200).json(chef);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export { 
+    createChef,
+    sendDummyOtp,
+    verifyDummyOtp, 
+    getAllChefs, 
+    getChefById, 
+    updateChefById, 
+    deleteChefById,
+    sendOtp, 
+    verifyOtp, 
+    updateVerificationStatus, 
+    uploadImage,
+    getChefProfile 
+};

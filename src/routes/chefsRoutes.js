@@ -1,5 +1,5 @@
 import express from 'express';
-import { createChef,sendDummyOtp,verifyDummyOtp, getAllChefs, getChefById, updateChefById, deleteChefById,sendOtp , verifyOtp, updateVerificationStatus } from '../controllers/chefController.js';
+import { createChef,sendDummyOtp,verifyDummyOtp, getAllChefs, getChefById, updateChefById, deleteChefById,sendOtp , verifyOtp, updateVerificationStatus, getChefProfile } from '../controllers/chefController.js';
 import verifyToken from '../middlewares/authrizatoin.config.js';
 import upload from '../middlewares/multer.config.js'
 const router = express.Router();
@@ -14,4 +14,6 @@ router.post('/sendOtpForLogin', sendOtp)
 router.post('/sendDummyOtpForLogin', sendDummyOtp)
 router.post('/verifyOtpForLogin', verifyOtp)
 router.post('/verifyDummyOtpForLogin', verifyDummyOtp)
+// User Profile Route
+router.get('/getProfile', verifyToken, getChefProfile);
 export default router;
