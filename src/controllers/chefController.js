@@ -111,22 +111,25 @@ const getChefById = async (req, res) => {
 // Update a user by ID
 const updateChefById = async (req, res) => {
     try {
-        const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, document } = req.body;
+        const { fullName, businessName, address, PhoneNo, chefServices, homemakerServices, document, profilePic } = req.body;
         
         const chefServicesArray = chefServices ? (Array.isArray(chefServices) ? chefServices : [chefServices]) : undefined;
 
+        const updateData = {
+            ...(fullName && { fullName }),
+            ...(businessName && { businessName }),
+            ...(address && { address }),
+            ...(PhoneNo && { PhoneNo }),
+            ...(chefServicesArray && { chefServices: chefServicesArray }),
+            ...(homemakerServices !== undefined && { homemakerServices }),
+            ...(document && { document }),
+            ...(profilePic && { profilePic })
+        };
+
         const updatedUser = await Chef.findByIdAndUpdate(
             req.params.id, 
-            {
-                fullName,
-                businessName,
-                address,
-                PhoneNo,
-                chefServices: chefServicesArray,
-                homemakerServices,
-                document
-            }, 
-            { new: true }
+            updateData, 
+            { new: true, runValidators: true }
         );
 
         if (!updatedUser) return res.status(404).json({ message: "User not found" });
